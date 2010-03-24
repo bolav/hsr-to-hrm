@@ -1,0 +1,14 @@
+HSR to HRM
+
+Convert HSR to HRM files using SportTracker.
+
+Requirements:
+SportsTracker
+http://www.saring.de/sportstracker/index.html
+
+To get HSR files, use sonicread:
+http://code.google.com/p/sonicread/
+
+Run: 
+
+java no.ikke.WriteHRM
