@@ -165,7 +165,11 @@ public class WriteHRM {
         if (exercise.getRecordingInterval() == 60) {
             sb.append("60");
         }
+        else if (exercise.getRecordingInterval() == 120) {
+            sb.append("120");
+        }
         else {
+            System.err.println(exercise.getRecordingInterval());
             sb.append("0");
         }
         return sb.toString();
