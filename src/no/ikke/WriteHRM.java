@@ -232,10 +232,15 @@ public class WriteHRM {
             sb.append("32\t"); // Flags
             sb.append("0\t"); // rec time
             sb.append("0\t"); // rec hr
-            sb.append(Math.round(exercise.getLapList()[i].getSpeed().getSpeedEnd() * 128));
-            sb.append("\t");
-            sb.append(exercise.getLapList()[i].getSpeed().getCadence());
-            sb.append("\t");
+            if (exercise.getLapList()[i].getSpeed() != null) {                
+                sb.append(Math.round(exercise.getLapList()[i].getSpeed().getSpeedEnd() * 128));
+                sb.append("\t");
+                sb.append(exercise.getLapList()[i].getSpeed().getCadence());
+                sb.append("\t");
+            }
+            else {
+                sb.append("0\t0\t");
+            }
             if (exercise.getLapList()[i].getAltitude() != null) {
                 sb.append(exercise.getLapList()[i].getAltitude().getAltitude());
             } 
@@ -254,7 +259,12 @@ public class WriteHRM {
                 sb.append(0);
             }
             sb.append("\t"); // ascent 10m
-            sb.append(Math.round(exercise.getLapList()[i].getSpeed().getDistance() / 100));
+            if (exercise.getLapList()[i].getSpeed() != null) {                
+                sb.append(Math.round(exercise.getLapList()[i].getSpeed().getDistance() / 100));
+            }
+            else {
+                sb.append("0");
+            }
             sb.append("\r\n");  // distance 0.1km
 
             sb.append("0\t"); // Lap type
@@ -314,17 +324,28 @@ public class WriteHRM {
         StringBuffer sb = new StringBuffer();
         
         sb.append("[Trip]\r\n");
-        sb.append(Math.round(exercise.getSpeed().getDistance() / 100));
+        if (exercise.getSpeed() != null) {
+            sb.append(Math.round(exercise.getSpeed().getDistance() / 100));
+        }
+        else {
+            sb.append("0");
+        }
         sb.append("\r\n"); // Distance
         sb.append("0\r\n"); // Ascent 1m
         sb.append(Math.round(exercise.getDuration() / 10));
         sb.append("\r\n"); // Total time in seconds
         sb.append("0\r\n"); // Average altitude 1m
         sb.append("0\r\n"); // Maximum altitude 1m
-        sb.append(Math.round(exercise.getSpeed().getSpeedAVG() * 128));
-        sb.append("\r\n"); // Average speed
-        sb.append(Math.round(exercise.getSpeed().getSpeedMax() * 128));
-        sb.append("\r\n"); // Maximum speed
+
+        if (exercise.getSpeed() != null) {
+            sb.append(Math.round(exercise.getSpeed().getSpeedAVG() * 128));
+            sb.append("\r\n"); // Average speed
+            sb.append(Math.round(exercise.getSpeed().getSpeedMax() * 128));
+            sb.append("\r\n"); // Maximum speed
+        }
+        else {
+            sb.append("0\r\n0\r\n");
+        }
         sb.append(exercise.getOdometer());
         sb.append("\r\n"); // Odometer at the end
         sb.append("\r\n");
