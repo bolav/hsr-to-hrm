@@ -85,7 +85,7 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         def m = p.matcher(fn)
         if (m.find()) {
             def gYear   = m.group(1).toInteger()
-            def gMonth  = m.group(2).toInteger()
+            def gMonth  = m.group(2).toInteger() - 1
             def gDay    = m.group(3).toInteger()
             def gHour   = m.group(4).toInteger()
             def gMinute = m.group(5).toInteger()
@@ -100,18 +100,22 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         def sumTime = 0
         def sumDist = 0
         def minInterval = 0
+        
+        // For speed
+        def speedMax = 0
+        
+        // For altitude
+        def altitudeMin = null
+        def altitudeMax = 0
+        def ascent = 0
+        def lastAltitude = null
+        def sumAltitude = 0
+        def samplecount = 0;
 
         // create array of exercise sample
         def sampleList = []
 
         for (line in fileContent) {
-            // System.out.println(line)
-            // most frequent element first
-            if (line.startsWith (",") ) {
-                ExerciseSample exeSample = new ExerciseSample ()
-                exeSample.heartRate = line.substring (1).toInteger ()
-                sampleList.add (exeSample)
-            }
             if (line.startsWith ("Time")) {
                 // First line
             }
@@ -124,32 +128,58 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
                 // Latitude, Longitude, Altitude(m),
                 //     5         6          7
                 def cols = line.split(",")
+                if (cols.length == 8) {
+                    
                 
-                double dist = cols[1].toDouble()
-                int ms = cols[0].toInteger()
+                    samplecount++
 
-                if (minInterval == 0) {
-                    minInterval = ms
-                }
+                    double dist = 0.0 
+                    if (cols[1] != "") {
+                        dist = cols[1].toDouble()
+                    }
+                    int ms = cols[0].toInteger()
+                    double alt = cols[7].toDouble() 
 
-                sumTime += ms
-                
-                def speed = ((dist * 3600) / ms)
-                
-                int n = ms / minInterval          // Get evenly spaced intervals
-                for (int i = 0;i < n; i++) {
-                    // System.out.println(i+"/"+n+" "+ms)
-                    ExerciseSample exeSample = new ExerciseSample ()
-                    exeSample.altitude = cols[7].toDouble() 
-                    exeSample.distance = sumDist + ((dist / n) * i)  // Get evenly spaced distance
-                    exeSample.speed = speed
-                    sampleList.add (exeSample)
-                }
+                    if (minInterval == 0) {
+                        minInterval = ms
+                    }
+
+                    sumTime += ms
+                    sumAltitude += alt
+
+                    if ((lastAltitude)&&( lastAltitude < alt)) {
+                        ascent += alt - lastAltitude
+                    }
+
+                    if ((altitudeMin == null)||( alt < altitudeMin )) {
+                        altitudeMin = alt
+                    }
+
+                    if (altitudeMax < alt) {
+                        altitudeMax = alt
+                    }
+
+                    lastAltitude = alt
+
+                    def speed = ((dist * 3600) / ms)
+                    if (speed > speedMax) {
+                        speedMax = speed
+                    }
+
+                    int n = ms / minInterval          // Get evenly spaced intervals
+                    for (int i = 0;i < n; i++) {
+                        // System.out.println(i+"/"+n+" "+ms)
+                        ExerciseSample exeSample = new ExerciseSample ()
+                        exeSample.altitude = alt
+                        exeSample.distance = sumDist + ((dist / n) * i)  // Get evenly spaced distance
+                        exeSample.speed = speed
+                        sampleList.add (exeSample)
+                    }
 
 
-                sumDist += dist
+                    sumDist += dist
 
-            }
+            }}
         }
 
         exercise.date = calDate.time
@@ -157,8 +187,24 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         exercise.recordingInterval = minInterval / 1000
         exercise.sampleList = sampleList
         exercise.duration = sumTime / 100
+        
+        
+        // Set speed
+        def speed = new ExerciseSpeed()
+        speed.distance = sumDist
+        speed.speedMax = speedMax
+        speed.speedAVG = ((sumDist * 3600) / sumTime)
+        exercise.speed = speed
+        
+        // Set altitude
 
-  
+        def altitude = new ExerciseAltitude()
+        altitude.altitudeMin = altitudeMin
+        altitude.altitudeAVG = sumAltitude / samplecount
+        altitude.altitudeMax = altitudeMax
+        altitude.ascent = ascent
+        exercise.altitude = altitude
+
         // done :-)
         return exercise
     }    

@@ -181,13 +181,23 @@ public class WriteHRM {
         sb.append("Upper");
         sb.append(i);
         sb.append("=");
-        sb.append(exercise.getHeartRateLimits()[i-1].getUpperHeartRate());
+        if (exercise.getHeartRateLimits() != null) {
+            sb.append(exercise.getHeartRateLimits()[i-1].getUpperHeartRate());
+        }
+        else {
+            sb.append("0");
+        }
         sb.append("\r\n");
         
         sb.append("Lower");
         sb.append(i);
         sb.append("=");
-        sb.append(exercise.getHeartRateLimits()[i-1].getLowerHeartRate());
+        if (exercise.getHeartRateLimits() != null) {
+            sb.append(exercise.getHeartRateLimits()[i-1].getLowerHeartRate());
+        }
+        else {
+            sb.append("0");
+        }
         sb.append("\r\n");
         
         return sb.toString();
@@ -379,10 +389,15 @@ public class WriteHRM {
         StringBuffer sb = new StringBuffer();
         
         // Summary for limits 1
-        sb.append(exercise.getHeartRateLimits()[i-1].getTimeWithin());
-        sb.append("\t");
-        sb.append(exercise.getHeartRateLimits()[i-1].getTimeAbove());
-        sb.append("\t"); // 
+        if (exercise.getHeartRateLimits() != null) {
+            sb.append(exercise.getHeartRateLimits()[i-1].getTimeWithin());
+            sb.append("\t");
+            sb.append(exercise.getHeartRateLimits()[i-1].getTimeAbove());
+            sb.append("\t"); // 
+        }
+        else {
+            sb.append("0\t0\t");
+        }
         sb.append("0\t"); // 
         sb.append("0\t"); // 
         sb.append("0\t"); // 
@@ -390,10 +405,16 @@ public class WriteHRM {
         
         sb.append(maxHR);
         sb.append("\t"); // 
-        sb.append(exercise.getHeartRateLimits()[i-1].getUpperHeartRate());
-        sb.append("\t"); // 
-        sb.append(exercise.getHeartRateLimits()[i-1].getLowerHeartRate());
-        sb.append("\t"); // 
+        if (exercise.getHeartRateLimits() != null) {
+        
+            sb.append(exercise.getHeartRateLimits()[i-1].getUpperHeartRate());
+            sb.append("\t"); // 
+            sb.append(exercise.getHeartRateLimits()[i-1].getLowerHeartRate());
+            sb.append("\t"); // 
+        } 
+        else {
+            sb.append("0\t0\t");
+        }
         sb.append(restHR);
         sb.append("\r\n"); // 
         
