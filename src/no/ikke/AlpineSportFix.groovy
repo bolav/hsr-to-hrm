@@ -32,9 +32,10 @@ class AlpineSportFix {
         for (line in fileContent) {
             if (line.startsWith ("Time")) {
                 // First line
+                System.out.println(line)
             }
             else if (line.startsWith("#")) {
-                
+                System.out.println(line)
             }
             else {
             
@@ -52,11 +53,17 @@ class AlpineSportFix {
                         // System.out.println(lat+","+lng+" - "+lastlat+","+lastlng+" ("+ dist +")")
                         calcdist = haversin(lat, lng, lastlat, lastlng)
                         // System.out.println("Distance: "+haversin(lat, lng, lastlat, lastlng));
+                        System.out.println(cols[0]+","+calcdist+","+cols[2]+","+cols[3]+","+cols[4]+","+cols[5]+","+cols[6]+","+cols[7])
+                    } 
+                    else {
+                        System.out.println(line)
                     }
+                    /*
                     if (dist > calcdist * 10) {
                         System.out.println(dist +"!="+calcdist)
                         System.out.println(line)
                     }
+                    */
                     
                     lastlat = lat
                     lastlng = lng
