@@ -1,4 +1,4 @@
-package no.ikke;
+package no.ikke.sportstraker.writer;
 
 import de.saring.polarviewer.core.PVException;
 import de.saring.polarviewer.parser.ExerciseParserFactory;

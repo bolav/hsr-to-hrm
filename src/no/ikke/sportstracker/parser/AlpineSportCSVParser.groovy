@@ -1,4 +1,4 @@
-package no.ikke
+package no.ikke.sportstracker.parser
 
 import de.saring.polarviewer.core.PVException
 import de.saring.polarviewer.data.*

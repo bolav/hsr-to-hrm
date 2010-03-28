@@ -1,4 +1,4 @@
-package no.ikke
+package no.ikke.sportstracker.fix
 
 class AlpineSportFix {
     
