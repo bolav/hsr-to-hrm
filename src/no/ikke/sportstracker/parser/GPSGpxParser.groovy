@@ -60,7 +60,7 @@ class GPSGpxParser extends AbstractExerciseParser {
         
         for (segment in path.trk.trkseg) {
             for (point in segment.trkpt) {
-                System.out.println(point.getAttribute("lat"))
+                System.out.println(point.lon)
             }
         }
         
