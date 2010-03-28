@@ -1,5 +1,7 @@
 package no.ikke.sportstracker.fix
 
+import no.ikke.sportstracker.util.GPS
+
 class AlpineSportFix {
     
     private def fileContent
@@ -10,22 +12,7 @@ class AlpineSportFix {
         fileContent = new File (filename).readLines ()
         fixContent()
     }
-    
-    float haversin (double lat1, double lon1, double lat2, double lon2) {
-        double earthRadius = 6371; //km
         
-        double dlon = Math.toRadians(lon2 - lon1);
-        double dlat = Math.toRadians(lat2 - lat1);
-        
-        double a = (Math.sin(dlat / 2)) * (Math.sin(dlat / 2)) + (Math.cos(lat1) * Math.cos(lat2) * (Math.sin(dlon / 2))) * (Math.cos(lat1) * Math.cos(lat2) * (Math.sin(dlon / 2)));
-        
-        double c = 2 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-        double km = earthRadius * c;
-        
-        return (float) (km * 1000);
-        
-    }
-    
     void fixContent () {
         def lastlat
         def lastlng
@@ -51,7 +38,7 @@ class AlpineSportFix {
                     double calcdist = 0;
                     if (lastlat != null) {
                         // System.out.println(lat+","+lng+" - "+lastlat+","+lastlng+" ("+ dist +")")
-                        calcdist = haversin(lat, lng, lastlat, lastlng)
+                        calcdist = GPS.haversin(lat, lng, lastlat, lastlng)
                         // System.out.println("Distance: "+haversin(lat, lng, lastlat, lastlng));
                         System.out.println(cols[0]+","+calcdist+","+cols[2]+","+cols[3]+","+cols[4]+","+cols[5]+","+cols[6]+","+cols[7])
                     } 

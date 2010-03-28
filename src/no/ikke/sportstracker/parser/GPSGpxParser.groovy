@@ -1,9 +1,12 @@
-package de.saring.polarviewer.parser.impl
+package no.ikke.sportstracker.parser
 
 import de.saring.polarviewer.core.PVException
 import de.saring.util.unitcalc.CalculationUtils;
 import de.saring.polarviewer.data.*
 import de.saring.polarviewer.parser.*
+
+import no.ikke.sportstracker.util.GPS
+import no.ikke.sportstracker.data.GPSSample
 
 import java.text.SimpleDateFormat
 
@@ -31,7 +34,7 @@ class GPSGpxParser extends AbstractExerciseParser {
 		
     /** {@inheritDoc} */
     @Override
-    PVExercise parseExercise (String filename) throws PVException {
+    PVExercise parseExercise (String filename) throws Exception {
         
         try {
             // get GPathResult object by using the XmlSlurper parser
@@ -39,7 +42,8 @@ class GPSGpxParser extends AbstractExerciseParser {
             return parseExercisePath (path)
         }
         catch (Exception e) {
-            throw new PVException ("Failed to read the GPX file '${filename}' ...", e)
+            throw e
+            // throw new PVException ("Failed to read the GPX file '${filename}' ...", e)
         }
     }
     
@@ -53,177 +57,126 @@ class GPSGpxParser extends AbstractExerciseParser {
         exercise.fileType = PVExercise.ExerciseFileType.GPS_GPX
         exercise.recordingMode = new RecordingMode ()
 		exercise.recordingMode.speed = true
+		exercise.recordingMode.altitude = true
         exercise.speed = new ExerciseSpeed()
+        exercise.altitude = new ExerciseAltitude()
+        exercise.lapList = []
         
         def time = path.time
         exercise.date = sdFormat.parse(time.text()) // How to fix timezone?
         
+        double lastlon = 0
+        double lastlat = 0
+        
+        long mints = Long.MAX_VALUE
+        long maxts = Long.MIN_VALUE
+        
+        long prevtimestamp = 0
+        int interval = Integer.MAX_VALUE
+        
+        def totdistance = 0
+        def count = 0
+        def altSum = 0
+        def altLast = 0
+        def ascent = 0
+        short altMax = Short.MIN_VALUE
+        short altMin = Short.MAX_VALUE
+        
+        float speedMax = 0
+
         for (segment in path.trk.trkseg) {
             for (point in segment.trkpt) {
-                System.out.println(point.lon)
+                long ts = sdFormat.parse(point.time.text()).getTime()
+                
+                if (prevtimestamp != 0) {
+                    int this_interval = (int)(ts - prevtimestamp)/1000
+                    if ((this_interval > 0) && (this_interval < interval)) {
+                        interval = this_interval
+                    }
+                    
+                }
+                if (ts < mints) {
+                    mints = ts
+                }
+                if (ts > maxts) {
+                    maxts = ts
+                }
+                
+                prevtimestamp = ts
+                
             }
         }
         
-        int trackpointCount = 0
-    		        
-        // no summary data, everything is stored in laps
-        // parse each lap and create a PolarViewer Lap object
-        def pvLaps = []
+        int numberOfSamples = (maxts-mints) / (interval * 1000)
+        exercise.setSampleList (new ExerciseSample[numberOfSamples]);
         
-        for (lap in activity.Lap) {
-            def pvLap = parseLapData(exercise, lap)
-            pvLaps << pvLap
-            
-            if (pvLap.heartRateAVG > 0) {
-                double lapDurationSeconds = lap.TotalTimeSeconds.toDouble()
-                totalHeartRateSum += pvLap.heartRateAVG * lapDurationSeconds                
+        exercise.recordingInterval = interval
+
+        prevtimestamp = 0
+        
+        for (segment in path.trk.trkseg) {
+            for (point in segment.trkpt) {
+                double lon = point.attributes().lon.toDouble()
+                double lat = point.attributes().lat.toDouble()
+                long ts = sdFormat.parse(point.time.text()).getTime()
+                
+                def altitude = point.ele.text().toDouble()
+                
+                altSum += altitude
+                count++
+                if (altitude > altMax) {
+                    altMax = altitude
+                }
+                if (altitude < altMin) {
+                    altMin = altitude
+                }
+                
+                if (prevtimestamp != 0) {
+                    if (altitude > altLast) {
+                        ascent += (altitude - altLast)
+                    }
+                    
+                    int this_interval = (int)(ts - prevtimestamp)/1000
+                    
+                    int startoffset = (int)((prevtimestamp - mints) / 1000) / interval;
+                    int endoffset = (int)((ts - mints) / 1000) / interval;
+                    def distance = GPS.haversin(lat, lon, lastlat, lastlon)
+                    
+                    float speed = (distance * 3600) / (this_interval * 1000)
+                    if (speed > speedMax) {
+                        speedMax = speed
+                    }
+
+                    for (int j=startoffset; j<endoffset; j++) {
+                        GPSSample exeSample = new GPSSample ()
+                        exercise.getSampleList()[j] = exeSample
+                        exeSample.altitude = (short)point.ele.text().toFloat()
+                        exeSample.speed = speed
+                        exeSample.distance = (int)totdistance
+                        // + ((distance / (endoffset + 1 - startoffset)) * ((j + 1)-startoffset))
+                    }
+                    
+                    totdistance += distance
+
+                }
+                lastlat = lat
+                lastlon = lon
+                prevtimestamp = ts
+                altLast = altitude
+                
             }
-			
-            double lapAscentMeters = 0
-            long previousTrackpointTimestamp = Long.MIN_VALUE
-            double previousTrackpointDistanceMeters = Double.MIN_VALUE
-            double previousTrackpointAltitudeMeters = Double.MIN_VALUE
-            
-            // parse all Track elements
-			for (track in lap.Track) {
-				
-				// parse all Trackpoint elements
-				for (trackpoint in track.Trackpoint) {
-                    trackpointCount++
-					
-                    // get optional heartrate data
-					if (!trackpoint.HeartRateBpm.isEmpty()) {
-						pvLap.heartRateSplit = trackpoint.HeartRateBpm.Value.toInteger()
-					}
-										
-					// calculate speed between current and previous trackpoint
-                    // (sometimes single trackpoint don't have distance data!)                    
-                    if (!trackpoint.DistanceMeters.isEmpty()) {
-                        
-                        long tpTimestamp = sdFormat.parse(trackpoint.Time.text()).time
-                        double tpDistanceMeters = trackpoint.DistanceMeters.toDouble()
-                        double tpSpeed = 0                    
-                        
-                        if (previousTrackpointTimestamp > Long.MIN_VALUE) { 
-                            long tpTimestampDiff = tpTimestamp - previousTrackpointTimestamp                        
-                            // sometimes computed difference is < 0 => impossible, use 0 instead
-                            double tpDistanceDiff = Math.max(tpDistanceMeters - previousTrackpointDistanceMeters, 0d)
-                            
-                            tpSpeed = CalculationUtils.calculateAvgSpeed(
-                                (float) (tpDistanceDiff / 1000f), (int) Math.round(tpTimestampDiff / 1000f))
-                        }
-                        previousTrackpointTimestamp = tpTimestamp
-                        previousTrackpointDistanceMeters = tpDistanceMeters
-                        
-                        pvLap.speed.speedEnd = tpSpeed
-                        exercise.speed.speedMax = Math.max(tpSpeed, exercise.speed.speedMax)
-                    }
-                    
-                    
-                    // get optional altitude data
-                    if (!trackpoint.AltitudeMeters.isEmpty()) {        
-                        double tpAltitude = trackpoint.AltitudeMeters.toDouble()
-                        altitudeMetersTotal += Math.round(tpAltitude)
-
-						// create altitude objects for exercise and current lap if not done yet
-						if (exercise.altitude == null) {
-                            exercise.altitude = new ExerciseAltitude()
-						    exercise.recordingMode.altitude = true        
-                            
-                            exercise.altitude.altitudeMin = Short.MAX_VALUE
-						    exercise.altitude.altitudeMax = Short.MIN_VALUE
-						    exercise.altitude.altitudeAVG = Math.round(altitudeMetersTotal / trackpointCount)
-						    exercise.altitude.ascent = 0
-						}
-                        
-                        if (pvLap.altitude == null) {
-                        	pvLap.altitude = new LapAltitude()
-                        }                        
-                        pvLap.altitude.altitude = Math.round(tpAltitude)
-                                                
-                        exercise.altitude.altitudeMin = Math.min(tpAltitude, exercise.altitude.altitudeMin)
-                    	exercise.altitude.altitudeMax = Math.max(tpAltitude, exercise.altitude.altitudeMax)
-                        
-                        // calculate lap ascent (need to use double precision here)
-                    	if (previousTrackpointAltitudeMeters > Double.MIN_VALUE && 
-                			tpAltitude > previousTrackpointAltitudeMeters) {
-                            double tpAscent = tpAltitude - previousTrackpointAltitudeMeters                           
-                            lapAscentMeters += tpAscent
-                        	pvLap.altitude.ascent = Math.round(lapAscentMeters)
-                        }
-                        previousTrackpointAltitudeMeters = tpAltitude
-                    }
-					
-					// TODO: parse all missing sample data from trackpoints
-					// Problem: In Garmin there is no fixed sample rate, the time between
-					// 2 samples is dynamic.
-					// Solution: Add the timestamp to the PV Sample class.
-				}
-			}
         }
-		
-    	exercise.lapList = pvLaps as Lap[]        
-
-		calculateAvgSpeed(exercise)
-		calculateAvgHeartrate(exercise, totalHeartRateSum)
-        calculateAvgAltitude(exercise, altitudeMetersTotal, trackpointCount)        
+        
+        exercise.altitude.altitudeMin = altMin
+        exercise.altitude.altitudeMax = altMax
+        exercise.altitude.altitudeAVG = (altSum / count)
+        exercise.altitude.ascent = ascent
+        
+        exercise.duration = (maxts - mints) / 100
+        exercise.speed.speedAVG = totdistance * 3600 / (exercise.duration * 100)
+        exercise.speed.speedMax = speedMax
+        
         exercise        
     }
     
-    def parseLapData(exercise, lapElement) {
-        def pvLap = new Lap()
-        pvLap.speed = new LapSpeed()
-        
-        double lapDurationSeconds = lapElement.TotalTimeSeconds.toDouble()
-        double distanceMeters = lapElement.DistanceMeters.toDouble()
-        exercise.duration += Math.round(lapDurationSeconds * 10)
-        pvLap.timeSplit = exercise.duration
-        exercise.speed.distance += Math.round(distanceMeters)
-        pvLap.speed.distance = exercise.speed.distance
-        exercise.energy += lapElement.Calories.toInteger()
-        
-        // stored maximum lap speed in XML is wrong, will be calculated
-        
-        // calculate average speed of lap
-        pvLap.speed.speedAVG = CalculationUtils.calculateAvgSpeed(
-	        (float) (distanceMeters / 1000f), 
-	        (int) Math.round(lapDurationSeconds))
-        
-        // parse optional heartrate data of lap
-        parseLapHeartRateData(exercise, pvLap, lapElement)
-        pvLap
-    }
-    
-    def parseLapHeartRateData(exercise, pvLap, lapElement) {        
-	    if (!lapElement.AverageHeartRateBpm.isEmpty()) {
-	        pvLap.heartRateAVG = lapElement.AverageHeartRateBpm.Value.toInteger()   
-	    }
-	    if (!lapElement.MaximumHeartRateBpm.isEmpty()) {
-	        pvLap.heartRateMax = lapElement.MaximumHeartRateBpm.Value.toInteger()
-	        exercise.heartRateMax = Math.max(pvLap.heartRateMax, exercise.heartRateMax)
-	    }
-    }    
-        
-    def calculateAvgSpeed(exercise) {
-        exercise.speed.speedAVG = CalculationUtils.calculateAvgSpeed(
-            (float) (exercise.speed.distance / 1000f), (int) Math.round(exercise.duration / 10f))
-    }
-    
-    def calculateAvgHeartrate(exercise, totalHeartRateSum) {
-        // calculate average heartrate for full exercise if available
-        if (totalHeartRateSum > 0) {
-            exercise.heartRateAVG = Math.round(totalHeartRateSum / (exercise.duration / 10d))
-        }        
-    }
-            
-    def calculateAvgAltitude(exercise, altitudeMetersTotal, trackpointCount) {
-        // calculate average altitude and total ascent (if recorded)
-        if (exercise.altitude != null) {
-            exercise.altitude.altitudeAVG = Math.round(altitudeMetersTotal / trackpointCount)
-            
-            for (pvLap in exercise.lapList) {
-                exercise.altitude.ascent += pvLap.altitude.ascent
-            }
-        }                
-    }
 }
