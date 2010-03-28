@@ -80,13 +80,18 @@ public class CombineExercise extends Exercise  {
     @Override
     public ExerciseSample[] getSampleList () {
         
+        ExerciseSample[] sampleList = super.getSampleList();
+        if (sampleList != null) {
+            return sampleList;
+        }
+        
         short ri = getRecordingInterval();
         int dur = getDuration();
         long time = getDate().getTime();
         
         int samples = dur / 10 / ri; // Number of samples is duration in seconds dived by recording interval
-        
-        ExerciseSample[] sampleList = new ExerciseSample[samples];
+        System.out.println("samples "+samples+ " dur: "+dur+" ri "+ri);
+        sampleList = new ExerciseSample[samples];
         
         // Init samples
         for (int i=0; i<samples; i++) {
@@ -100,25 +105,50 @@ public class CombineExercise extends Exercise  {
             PVExercise x = exercises.get(i);
             long xtime = x.getDate().getTime();
             int xdur = x.getDuration();
+            short xri = x.getRecordingInterval();
             ExerciseSample[] xsl = x.getSampleList();
             RecordingMode xrm = x.getRecordingMode();
-            long startoffset = ((xtime - time) / 1000) / ri; // Gives startoffset in recording interval
-            int k = startoffset;
+            long k = xtime;
 
             // Calc when in the session this file started
             // System.out.println("time: "+time+" xtime: "+xtime+" offset: "+startoffset);
             for (int ii=0; ii<xsl.length; ii++) {
-                // sampleList[]
-            }
-            for (int i=startoffset; i<samples; i++) {
+                short hr = xsl[ii].getHeartRate();
+                short alt = xsl[ii].getAltitude();
+                float speed = xsl[ii].getSpeed();
+                int dist = xsl[ii].getDistance();
                 
+                
+                long nextk = k + (xri * 1000); // k and nextk are ms
+                
+                // Which samples shall we populate?
+                int startoffset = (int)((k - time) / 1000) / ri;
+                int endoffset = (int)((nextk - time) / 1000) / ri;
+                
+                for (int j=startoffset; j<endoffset; j++) {
+                    if (hr > 0) {
+                        sampleList[j].setHeartRate(hr);
+                    }
+                    if (alt > 0) {
+                        sampleList[j].setAltitude(alt);
+                    }
+                    if (speed > 0) {
+                        sampleList[j].setSpeed(speed);
+                    }
+                    if (dist > 0) {
+                        sampleList[j].setDistance(dist);
+                    }
+                }
+                
+                k = nextk;
+                // sampleList[]
             }
             
             
             // ExerciseSample[] sl = exercises.get(i).getSampleList();
         }
                 
-        
+        setSampleList(sampleList);
         return sampleList;
     }
     
@@ -138,10 +168,15 @@ public class CombineExercise extends Exercise  {
     
     @Override
     public int getDuration () {
+        long time = getDate().getTime();
+        
         int duration = 0;
         for (int i = 0; i<exercises.size(); i++) {
-            // Check recordinginterval and number of samples
             int dur = exercises.get(i).getDuration();
+            long xtime = exercises.get(i).getDate().getTime();
+            
+            dur += (xtime-time)/100;
+            
             if (dur > duration) {
                 duration = dur;
             }
