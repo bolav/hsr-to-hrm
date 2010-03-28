@@ -39,7 +39,7 @@ class GPSGpxParser extends AbstractExerciseParser {
             return parseExercisePath (path)
         }
         catch (Exception e) {
-            throw new PVException ("Failed to read the Garmin TCX exercise file '${filename}' ...", e)
+            throw new PVException ("Failed to read the GPX file '${filename}' ...", e)
         }
     }
     
@@ -55,8 +55,15 @@ class GPSGpxParser extends AbstractExerciseParser {
 		exercise.recordingMode.speed = true
         exercise.speed = new ExerciseSpeed()
         
-        def activity = path.Activities.Activity
-        exercise.date = sdFormat.parse(activity.Id.text())
+        def time = path.time
+        exercise.date = sdFormat.parse(time.text()) // How to fix timezone?
+        
+        for (segment in path.trk.trkseg) {
+            for (point in segment.trkpt) {
+                System.out.println(point.getAttribute("lat"))
+            }
+        }
+        
         int trackpointCount = 0
     		        
         // no summary data, everything is stored in laps
