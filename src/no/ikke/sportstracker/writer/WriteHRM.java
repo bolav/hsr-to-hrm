@@ -1,4 +1,4 @@
-package no.ikke.sportstraker.writer;
+package no.ikke.sportstracker.writer;
 
 import de.saring.polarviewer.core.PVException;
 import de.saring.polarviewer.parser.ExerciseParserFactory;
@@ -20,6 +20,10 @@ public class WriteHRM {
     
     public WriteHRM (String fn) {
         inFile = fn;
+    }
+    
+    public WriteHRM (PVExercise x) {
+        exercise = x;
     }
     
     public void parseFile () throws PVException {
@@ -60,8 +64,8 @@ public class WriteHRM {
     
     public String getDate () {
         StringBuffer sb = new StringBuffer();
-        Calendar date = Calendar.getInstance ();
-        date.setTime (exercise.getDate ());
+        Calendar date = Calendar.getInstance();
+        date.setTime( exercise.getDate() );
         
         sb.append(date.get(Calendar.YEAR));
         int month = date.get(Calendar.MONTH) + 1;
@@ -159,19 +163,7 @@ public class WriteHRM {
     
     public String getRecInterval () {
         StringBuffer sb = new StringBuffer();
-        //if (exercise.getRecordingInterval() == ) {
-            
-        // }
-        if (exercise.getRecordingInterval() == 60) {
-            sb.append("60");
-        }
-        else if (exercise.getRecordingInterval() == 120) {
-            sb.append("120");
-        }
-        else {
-            System.err.println(exercise.getRecordingInterval());
-            sb.append("0");
-        }
+        sb.append(exercise.getRecordingInterval());
         return sb.toString();
     }
     
