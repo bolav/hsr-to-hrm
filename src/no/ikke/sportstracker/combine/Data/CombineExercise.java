@@ -1,8 +1,8 @@
 package no.ikke.sportstracker.combine;
 
 import no.ikke.sportstracker.data.Exercise;
+import no.ikke.sportstracker.data.GPSSample;
 import de.saring.polarviewer.data.*;
-
 
 import java.util.List;
 import java.util.ArrayList;
@@ -77,10 +77,33 @@ public class CombineExercise extends Exercise  {
         return new Lap[0];
     }
     
+    @Override 
+    public ExerciseSpeed getSpeed () {
+        ExerciseSample[] sl = getSampleList();
+        ExerciseSpeed speed = new ExerciseSpeed();
+        
+        int distance = sl[sl.length-3].getDistance();
+        speed.setDistance(distance);
+        speed.setSpeedAVG((distance*3600) / (getDuration()*100));
+        
+        float max = 0;
+        for (int i = 0; i<exercises.size(); i++) {
+            PVExercise x = exercises.get(i);
+            ExerciseSpeed xs = x.getSpeed();
+            if (xs != null) {
+                if (xs.getSpeedMax() > max) {
+                    max = xs.getSpeedMax();
+                }
+            }
+        }
+        speed.setSpeedMax(max);
+        return speed;
+    }
+     
     @Override
     public ExerciseSample[] getSampleList () {
         
-        ExerciseSample[] sampleList = super.getSampleList();
+        GPSSample[] sampleList = (GPSSample[])super.getSampleList();
         if (sampleList != null) {
             return sampleList;
         }
@@ -90,12 +113,13 @@ public class CombineExercise extends Exercise  {
         long time = getDate().getTime();
         
         int samples = dur / 10 / ri; // Number of samples is duration in seconds dived by recording interval
+        samples++;
         System.out.println("samples "+samples+ " dur: "+dur+" ri "+ri);
-        sampleList = new ExerciseSample[samples];
+        sampleList = new GPSSample[samples];
         
         // Init samples
         for (int i=0; i<samples; i++) {
-            ExerciseSample sample = new ExerciseSample();
+            GPSSample sample = new GPSSample();
             sampleList[i] = sample;
         }
         
@@ -138,6 +162,10 @@ public class CombineExercise extends Exercise  {
                     if (dist > 0) {
                         sampleList[j].setDistance(dist);
                     }
+                    if (xsl[ii] instanceof GPSSample) {
+                        sampleList[j].setLongitude(((GPSSample)(xsl[ii])).getLongitude());
+                        sampleList[j].setLatitude(((GPSSample)(xsl[ii])).getLatitude());
+                    }
                 }
                 
                 k = nextk;
@@ -147,6 +175,8 @@ public class CombineExercise extends Exercise  {
             
             // ExerciseSample[] sl = exercises.get(i).getSampleList();
         }
+        
+        // Iterate all and fix?
                 
         setSampleList(sampleList);
         return sampleList;

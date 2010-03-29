@@ -153,6 +153,8 @@ class GPSGpxParser extends AbstractExerciseParser {
                         exeSample.altitude = (short)point.ele.text().toFloat()
                         exeSample.speed = speed
                         exeSample.distance = (int)totdistance
+                        exeSample.latitude = lat
+                        exeSample.longitude = lon
                         // + ((distance / (endoffset + 1 - startoffset)) * ((j + 1)-startoffset))
                     }
                     

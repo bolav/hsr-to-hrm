@@ -5,6 +5,8 @@ import de.saring.polarviewer.data.*
 import de.saring.polarviewer.parser.*
 import de.saring.util.unitcalc.ConvertUtils
 
+import no.ikke.sportstracker.data.GPSSample
+
 import java.util.regex.Pattern
 
 /**
@@ -169,10 +171,13 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
                     int n = ms / minInterval          // Get evenly spaced intervals
                     for (int i = 0;i < n; i++) {
                         // System.out.println(i+"/"+n+" "+ms)
-                        ExerciseSample exeSample = new ExerciseSample ()
+                        ExerciseSample exeSample = new GPSSample ()
                         exeSample.altitude = alt
                         exeSample.distance = sumDist + ((dist / n) * i)  // Get evenly spaced distance
                         exeSample.speed = speed
+                        exeSample.latitude = cols[5].toDouble()
+                        exeSample.longitude = cols[6].toDouble()
+                        
                         sampleList.add (exeSample)
                     }
 

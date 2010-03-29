@@ -6,7 +6,7 @@ import de.saring.polarviewer.core.PVException;
 import de.saring.polarviewer.parser.ExerciseParserFactory;
 import de.saring.polarviewer.parser.ExerciseParser;
 
-import no.ikke.sportstracker.writer.WriteHRM;
+import no.ikke.sportstracker.writer.*;
 
 public class CombineMain {
     
@@ -19,17 +19,15 @@ public class CombineMain {
     }
     
     public void write () {
-        WriteHRM w = new WriteHRM(exercises);
-        System.out.println(w.getHRM());
+        // WriteHRM w = new WriteHRM(exercises);
+        WriterInterface w = new GarminTCXWriter(exercises);
+        System.out.println(w.getString());
     }
     
     public static void main(String[] args) throws PVException {
-        System.out.println("main");
         
         CombineMain app = new CombineMain();
-        System.out.println("args: "+args.length);
         for (int i=0; i<args.length; i++) {
-            System.out.println(i+": reading "+args[i]);
             app.readExercise(args[i]);
         }
         app.write();

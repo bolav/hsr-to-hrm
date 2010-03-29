@@ -303,12 +303,21 @@ public class WriteHRM {
         for (int i=0; i < exercise.getSampleList().length; i++) {
             sb.append(exercise.getSampleList()[i].getHeartRate());
             sb.append("\t"); // BPM
-            sb.append(Math.round(exercise.getSampleList()[i].getSpeed () * 10));
-            sb.append("\t"); // Speed
-            sb.append(exercise.getSampleList()[i].getCadence());
-            sb.append("\t"); // Cadence
-            sb.append(exercise.getSampleList()[i].getAltitude());
-            sb.append("\t"); // Altitude
+            if (exercise.getRecordingMode().isSpeed()) {
+                sb.append(Math.round(exercise.getSampleList()[i].getSpeed () * 10));
+                sb.append("\t"); // Speed
+            } 
+            
+            if (exercise.getRecordingMode().isCadence()) {
+                sb.append(exercise.getSampleList()[i].getCadence());
+                sb.append("\t"); // Cadence
+            } 
+            
+            if (exercise.getRecordingMode().isAltitude()) {
+                sb.append(exercise.getSampleList()[i].getAltitude());
+                sb.append("\t"); // Altitude
+            } 
+            
             sb.append("0\t"); // Power
             sb.append("0"); // Balance
             sb.append("\t");
