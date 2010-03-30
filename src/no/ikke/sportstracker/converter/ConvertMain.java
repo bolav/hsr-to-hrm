@@ -18,7 +18,7 @@ public class ConvertMain {
     
     public void write () {
         // WriteHRM w = new WriteHRM(exercises);
-        WriterInterface w = new GarminTCXWriter(exercise);
+        WriterInterface w = new GPSGPXWriter(exercise);
         System.out.println(w.getString());
     }
     

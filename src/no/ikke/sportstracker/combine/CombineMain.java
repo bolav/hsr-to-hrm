@@ -18,10 +18,11 @@ public class CombineMain {
         
     }
     
-    public void write () {
+    public void write () throws PVException {
         // WriteHRM w = new WriteHRM(exercises);
-        WriterInterface w = new GarminTCXWriter(exercises);
-        System.out.println(w.getString());
+        WriterInterface w = WriterFactory.getWriter("test.hrm");
+        // WriterInterface w = new GarminTCXWriter(exercises);
+        System.out.println(w.getString(exercises));
     }
     
     public static void main(String[] args) throws PVException {

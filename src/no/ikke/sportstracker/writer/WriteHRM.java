@@ -8,7 +8,7 @@ import de.saring.util.unitcalc.FormatUtils;
 
 import java.util.Calendar;
 
-public class WriteHRM {
+public class WriteHRM extends AbstractWriter {
     
     FormatUtils formatUtils = new FormatUtils(FormatUtils.UnitSystem.Metric, FormatUtils.SpeedView.DistancePerHour);
     
@@ -18,12 +18,19 @@ public class WriteHRM {
     int maxHR = 188;
     int restHR = 88;
     
+    public WriteHRM () { }
+    
     public WriteHRM (String fn) {
         inFile = fn;
     }
     
     public WriteHRM (PVExercise x) {
         exercise = x;
+    }
+    
+    public String getString (PVExercise x) {
+        exercise = x;
+        return getHRM();
     }
     
     public void parseFile () throws PVException {
@@ -501,6 +508,10 @@ public class WriteHRM {
         sb.append(getHRData());
         
         return sb.toString();
+    }
+    
+    public WriterInfo getInfo () {
+        return new WriterInfo("Polar HRM","hrm");
     }
     
     public static void main (String[] args) throws PVException {
