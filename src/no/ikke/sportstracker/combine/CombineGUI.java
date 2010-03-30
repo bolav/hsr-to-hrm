@@ -12,6 +12,7 @@ import com.google.inject.Injector;
 import javax.swing.UIManager;
 import org.jdesktop.application.View;
 
+import no.ikke.sportstracker.combine.gui.*;
 
 
 
@@ -25,7 +26,7 @@ public class CombineGUI extends SingleFrameApplication {
     
     /** The SportsTracker application context. */
     private STContext context;
-    private STView view;
+    private CombineView view;
     
     
     /**
@@ -76,7 +77,7 @@ public class CombineGUI extends SingleFrameApplication {
         document.loadOptions ();
         initLookAndFeel (document.getOptions ().getLookAndFeelClassName ());        
         
-        view = injector.getInstance (STView.class);
+        view = new CombineView(this);
         view.initView ();
         show ((View) view);
         
