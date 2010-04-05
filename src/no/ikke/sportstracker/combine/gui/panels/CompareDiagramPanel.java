@@ -9,7 +9,7 @@ import no.ikke.sportstracker.dummy.STContextDummy;
 import no.ikke.sportstracker.combine.data.CombineExercise;
 
 import de.saring.polarviewer.data.Lap;
-
+import de.saring.polarviewer.data.PVExercise;
 import de.saring.polarviewer.gui.panels.DiagramPanel;
 import de.saring.polarviewer.data.ExerciseSample;
 import de.saring.polarviewer.data.HeartRateLimit;
@@ -68,32 +68,33 @@ public class CompareDiagramPanel extends DiagramPanel {
         // (right axis only when user selected a different axis type)
         Series sLeft = createSeries(fDomainAxisTime, "left");
         Series sRight = null;
-        if ((axisTypeRight != AxisType.Nothing) && (axisTypeRight != axisTypeLeft)) {
+
+        int graphs = 1;
+
+        if (exercise.getExerciseCount() > 1) {
             sRight = createSeries (fDomainAxisTime, "right");
+            graphs++;
         }
+
 
 
         // fill data series with all recorded exercise samples
         if (exercise.getSampleList () != null) {
-            for (int i = 0; i < exercise.getSampleList ().length; i++) {
+            for (int j = 0; j < graphs; j++) {
+                PVExercise x = exercise.getExercise(j);
+                for (int i = 0; i < x.getSampleList().length; i++) {
+                    ExerciseSample sample = x.getSampleList()[i];
+                    Number value = sample.getSpeed();
+                    int timeSeconds = i * x.getRecordingInterval ();
+                    Second second = createJFreeChartSecond(timeSeconds);
 
-                ExerciseSample sample = exercise.getSampleList ()[i];
-                Number valueLeft = getSampleValue (axisTypeLeft, sample);
-                Number valueRight = getSampleValue (axisTypeRight, sample);
-
-                if (fDomainAxisTime) {
-                    // calculate current second
-                    int timeSeconds = i * exercise.getRecordingInterval ();
-                    Second second = createJFreeChartSecond (timeSeconds);
-                    fillDataInTimeSeries ((TimeSeries) sLeft, (TimeSeries) sRight, second, valueLeft, valueRight);
-                }
-                else {
-                    // get current distance of this sample
-                    double fDistance = sample.getDistance () / 1000f;
-                    if (getContext ().getFormatUtils ().getUnitSystem () != FormatUtils.UnitSystem.Metric) {
-                        fDistance = ConvertUtils.convertKilometer2Miles (fDistance, false);
+                    if (j == 0) {
+                        ((TimeSeries)sLeft).add(second, value);
                     }
-                    fillDataInXYSeries ((XYSeries) sLeft, (XYSeries) sRight, fDistance, valueLeft, valueRight);
+                    else if (j == 1) {
+                        ((TimeSeries)sRight).add(second, value);
+                        
+                    }
                 }
             }
         }
@@ -240,6 +241,46 @@ public class CompareDiagramPanel extends DiagramPanel {
 
         // add chart to panel
         chartPanel.setChart (chart);
+    }
+
+    public Number getSampleValue(AxisType axisType, ExerciseSample sample) {
+
+        FormatUtils formatUtils = getContext ().getFormatUtils ();
+
+        switch (axisType) {
+            case Heartrate:
+                return sample.getHeartRate ();
+            case Altitude:
+                if (formatUtils.getUnitSystem () == FormatUtils.UnitSystem.Metric) {
+                    return sample.getAltitude ();
+                }
+                else {
+                    return ConvertUtils.convertMeter2Feet (sample.getAltitude ());
+                }
+            case Speed:
+                float speed = sample.getSpeed ();
+                if (formatUtils.getUnitSystem () != FormatUtils.UnitSystem.Metric) {
+                    speed = (float) ConvertUtils.convertKilometer2Miles (speed, false);
+                }
+                if (formatUtils.getSpeedView () == FormatUtils.SpeedView.MinutesPerDistance) {
+                    // convert speed to minutes per distance
+                    if (speed != 0f) {
+                        speed = 60 / speed;
+                    }
+                }
+                return speed;
+            case Cadence:
+                return sample.getCadence ();
+            case Temperature:
+                if (formatUtils.getUnitSystem () == FormatUtils.UnitSystem.Metric) {
+                    return sample.getTemperature ();
+                }
+                else {
+                    return ConvertUtils.convertCelsius2Fahrenheit (sample.getTemperature ());
+                }
+            default:
+                return 0;
+        }
     }
 
 

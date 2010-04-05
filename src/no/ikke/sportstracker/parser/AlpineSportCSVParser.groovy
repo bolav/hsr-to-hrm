@@ -6,6 +6,8 @@ import de.saring.polarviewer.parser.*
 import de.saring.util.unitcalc.ConvertUtils
 
 import no.ikke.sportstracker.data.GPSSample
+import no.ikke.sportstracker.util.GPS
+
 
 import java.util.regex.Pattern
 
@@ -105,6 +107,8 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         
         // For speed
         def speedMax = 0
+        def lastLon = null
+        def lastLat = null
         
         // For altitude
         def altitudeMin = null
@@ -112,7 +116,7 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         def ascent = 0
         def lastAltitude = null
         def sumAltitude = 0
-        def samplecount = 0;
+        def samplecount = 0
 
         // create array of exercise sample
         def sampleList = []
@@ -164,6 +168,31 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
                     lastAltitude = alt
 
                     def speed = ((dist * 3600) / ms)
+                    /* Use speed for speed
+                    def speed
+                    if (cols[2] != "") {
+                        speed = cols[2].toDouble()
+                    }
+                    else {
+                        speed = 0
+                    }
+                    */
+                    /* Use GPS for speed
+                    def speed = 0
+
+                    double lat = cols[5].toDouble()
+                    double lng = cols[6].toDouble()
+
+                    if (lastLat != null) {
+                        def calcdist = GPS.haversin(lat, lng, lastLat, lastLon)
+                        speed = ((calcdist * 3600) / ms)
+
+                    }
+
+                    lastLat = lat
+                    lastLon = lng
+                    */
+
                     if (speed > speedMax) {
                         speedMax = speed
                     }

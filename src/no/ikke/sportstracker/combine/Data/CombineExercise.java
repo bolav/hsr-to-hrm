@@ -38,6 +38,10 @@ public class CombineExercise extends Exercise  {
         return exercises.get(i);
     }
 
+    public int getExerciseCount () {
+        return exercises.size() + 1;
+    }
+
     public void readExercise (String fn) throws PVException {
         ExerciseParser parser = ExerciseParserFactory.getParser(fn);
         add(parser.parseExercise(fn));
@@ -231,6 +235,7 @@ public class CombineExercise extends Exercise  {
             }
         }
 
+        /*
         int ms = getMaxSamples();
         System.out.println("Max "+ms);
         int mydiv = duration / recordingInterval;
@@ -241,7 +246,7 @@ public class CombineExercise extends Exercise  {
             // Check for goodlooking?
         }
         System.out.println("ri "+recordingInterval);
-
+        */
         setRecordingInterval(recordingInterval);
         return recordingInterval;
     }
