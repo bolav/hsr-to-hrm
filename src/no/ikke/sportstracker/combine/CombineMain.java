@@ -7,6 +7,7 @@ import de.saring.polarviewer.parser.ExerciseParserFactory;
 import de.saring.polarviewer.parser.ExerciseParser;
 
 import no.ikke.sportstracker.writer.*;
+import no.ikke.sportstracker.combine.data.CombineExercise;
 
 public class CombineMain {
     

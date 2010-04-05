@@ -16,10 +16,11 @@ public class ConvertMain {
         exercise = parser.parseExercise(fn);
     }
     
-    public void write () {
+    public void write () throws PVException {
         // WriteHRM w = new WriteHRM(exercises);
-        WriterInterface w = new GPSGPXWriter(exercise);
-        System.out.println(w.getString());
+        WriterInterface w = WriterFactory.getWriter("test.gpx");
+        // WriterInterface w = new GarminTCXWriter(exercises);
+        System.out.println(w.getString(exercise));
     }
     
     

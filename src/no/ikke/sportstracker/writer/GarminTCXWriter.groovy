@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 
 import java.util.Date
 
-class GarminTCXWriter implements WriterInterface {
+class GarminTCXWriter extends AbstractWriter {
     
     PVExercise exercise
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")

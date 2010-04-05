@@ -1,4 +1,4 @@
-package no.ikke.sportstracker.combine;
+package no.ikke.sportstracker.combine.data;
 
 import no.ikke.sportstracker.data.Exercise;
 import no.ikke.sportstracker.data.GPSSample;
@@ -9,16 +9,39 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import de.saring.polarviewer.core.PVException;
+import de.saring.polarviewer.parser.ExerciseParserFactory;
+import de.saring.polarviewer.parser.ExerciseParser;
+
 
 public class CombineExercise extends Exercise  {
     List<PVExercise> exercises = new ArrayList<PVExercise> ();
-    
+    private int maxSamples = 500;
+
     public CombineExercise () {
         
+    }
+
+    public void reset () {
+        setSampleList(null);
+        setSpeed(null);
+        setRecordingInterval((short)0);
+
     }
     
     public void add (PVExercise x) {
         exercises.add(x);
+        reset();
+    }
+
+    public PVExercise getExercise (int i) {
+        return exercises.get(i);
+    }
+
+    public void readExercise (String fn) throws PVException {
+        ExerciseParser parser = ExerciseParserFactory.getParser(fn);
+        add(parser.parseExercise(fn));
+
     }
     
     @Override
@@ -79,12 +102,23 @@ public class CombineExercise extends Exercise  {
     
     @Override 
     public ExerciseSpeed getSpeed () {
+        ExerciseSpeed speed = super.getSpeed();
+
+        if (speed != null) {
+            return speed;
+        }
+
         ExerciseSample[] sl = getSampleList();
-        ExerciseSpeed speed = new ExerciseSpeed();
-        
-        int distance = sl[sl.length-3].getDistance();
-        speed.setDistance(distance);
-        speed.setSpeedAVG((distance*3600) / (getDuration()*100));
+        speed = new ExerciseSpeed();
+
+        int maxDistance = 0;
+        for (int i=0; i<sl.length;i++) {
+            if (sl[i].getDistance() > maxDistance) {
+                maxDistance = sl[i].getDistance();
+            }
+        }
+        speed.setDistance(maxDistance);
+        speed.setSpeedAVG((maxDistance*3600) / (getDuration()*100));
         
         float max = 0;
         for (int i = 0; i<exercises.size(); i++) {
@@ -97,6 +131,7 @@ public class CombineExercise extends Exercise  {
             }
         }
         speed.setSpeedMax(max);
+        setSpeed(speed);
         return speed;
     }
      
@@ -113,7 +148,6 @@ public class CombineExercise extends Exercise  {
         long time = getDate().getTime();
         
         int samples = dur / 10 / ri; // Number of samples is duration in seconds dived by recording interval
-        samples++;
         System.out.println("samples "+samples+ " dur: "+dur+" ri "+ri);
         sampleList = new GPSSample[samples];
         
@@ -184,15 +218,31 @@ public class CombineExercise extends Exercise  {
     
     @Override
     public short getRecordingInterval () {
-        short recordingInterval = 0;
+
+        short recordingInterval = super.getRecordingInterval();
+        if (recordingInterval > 0) return recordingInterval;
+
+        int duration = getDuration() / 10; // Duration is in 0.1s
         for (int i = 0; i<exercises.size(); i++) {
-            // Check recordinginterval and number of samples
+
             short ri = exercises.get(i).getRecordingInterval();
             if ((recordingInterval == 0) || (ri < recordingInterval)) {
-                recordingInterval = ri;
+                if (ri > 0) recordingInterval = ri;
             }
         }
-        
+
+        int ms = getMaxSamples();
+        System.out.println("Max "+ms);
+        int mydiv = duration / recordingInterval;
+        System.out.println("Current "+mydiv);
+
+        if (mydiv > ms) {
+            recordingInterval = (short)(duration / ms); // Minste felles multiplum?
+            // Check for goodlooking?
+        }
+        System.out.println("ri "+recordingInterval);
+
+        setRecordingInterval(recordingInterval);
         return recordingInterval;
     }
     
@@ -214,6 +264,21 @@ public class CombineExercise extends Exercise  {
                 
         return duration;
     }
+
+    public int getMaxSamples() {
+        return maxSamples;
+    }
+
+    public void setMaxSamples(int maxSamples) {
+        this.maxSamples = maxSamples;
+    }
     
-    
+    public static void main(String[] args) throws PVException {
+
+        CombineExercise ex = new CombineExercise();
+        ex.readExercise("/Users/bolav/Documents/training/logs/20100405-rr.hsr");
+        ex.readExercise("/Users/bolav/Documents/training/logs/2010040512241401_mtb.as_csv");
+        System.out.println(ex.getSampleList());
+    }
+
 }

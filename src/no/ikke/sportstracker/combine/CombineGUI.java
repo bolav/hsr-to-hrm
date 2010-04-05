@@ -20,13 +20,7 @@ public class CombineGUI extends SingleFrameApplication {
     
     private static final Logger LOGGER = Logger.getLogger (CombineGUI.class.getName ()); 
     
-    private STDocument document;
-    
     private String[] cmdLineParameters; 
-    
-    /** The SportsTracker application context. */
-    private STContext context;
-    private CombineView view;
     
     
     /**
@@ -39,47 +33,16 @@ public class CombineGUI extends SingleFrameApplication {
     }
     
     
-    /**
-     * Initializes the Look&Feel of the application. Must be done before creating the view 
-     * components.
-     * @param lookAndFeelClassName class name of the look and feel (or null for system default)
-     */
-    private void initLookAndFeel (String lookAndFeelClassName) {
-        if (lookAndFeelClassName == null) {
-            lookAndFeelClassName = UIManager.getSystemLookAndFeelClassName ();
-        }
-        
-        try {
-            UIManager.setLookAndFeel (lookAndFeelClassName);
-        }
-        catch (Exception e) {
-            LOGGER.log (Level.WARNING, "Failed to set look&feel to " + lookAndFeelClassName + "!", e);
-        }
-    }
     
     /**
      * Starts up the SportsTracker application.
      */
     @Override 
     protected void startup () {
-        
-        // create and configure the Guice injector 
-        Injector injector = Guice.createInjector (new AbstractModule () {
-            public void configure () {
-                // create and bind SportsTracker GUI context, which can be used everywhere
-                context = new STContextImpl (getContext ());
-                bind (STContext.class).toInstance (context);
-            }
-        });
-        
-        document = injector.getInstance (STDocument.class);
-        document.evaluateCommandLineParameters (cmdLineParameters);
-        document.loadOptions ();
-        initLookAndFeel (document.getOptions ().getLookAndFeelClassName ());        
-        
-        view = new CombineView(this);
-        view.initView ();
-        show ((View) view);
+           no.ikke.sportstracker.dummy.STContextDummy.setContext(getContext());
+
+           CombineView cv = new CombineView();
+           show(cv);
         
     }
     
