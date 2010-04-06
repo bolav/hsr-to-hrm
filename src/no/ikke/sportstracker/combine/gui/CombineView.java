@@ -15,6 +15,8 @@ import no.ikke.sportstracker.combine.data.CombineExercise;
 import no.ikke.sportstracker.combine.gui.panels.CompareDiagramPanel;
 import no.ikke.sportstracker.dummy.STContextDummy;
 import no.ikke.sportstracker.dummy.DummyDocument;
+import no.ikke.sportstracker.writer.*;
+
 
 import de.saring.polarviewer.gui.PVDocument;
 
@@ -82,6 +84,10 @@ public class CombineView extends javax.swing.JFrame {
         bAdd = new javax.swing.JButton();
         bFile = new javax.swing.JButton();
         bView = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        tfOutfile = new javax.swing.JTextField();
+        bFileout = new javax.swing.JButton();
+        bSave = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -125,6 +131,28 @@ public class CombineView extends javax.swing.JFrame {
             }
         });
 
+        jLabel2.setText("Output");
+        jLabel2.setName("jLabel2"); // NOI18N
+
+        tfOutfile.setText("/Users/bolav/Documents/training/logs/");
+        tfOutfile.setName("tfOutfile"); // NOI18N
+
+        bFileout.setText("...");
+        bFileout.setName("bFileout"); // NOI18N
+        bFileout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bFileoutActionPerformed(evt);
+            }
+        });
+
+        bSave.setText("Save");
+        bSave.setName("bSave"); // NOI18N
+        bSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bSaveActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -132,19 +160,27 @@ public class CombineView extends javax.swing.JFrame {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 288, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel1Layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel1)
+                            .add(jLabel2))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tfFileName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tfOutfile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(tfFileName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createSequentialGroup()
                         .add(bFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(bAdd))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 288, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bView)))
-                .addContainerGap(151, Short.MAX_VALUE))
+                        .add(bAdd))
+                    .add(bView)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(bFileout, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(bSave)))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -152,13 +188,24 @@ public class CombineView extends javax.swing.JFrame {
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(tfFileName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(bFile)
-                    .add(bAdd))
+                    .add(bAdd)
+                    .add(bFile))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel2)
+                            .add(tfOutfile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(16, 16, 16))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(bFileout)
+                            .add(bSave))
+                        .add(18, 18, 18)))
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(bView))
-                .addContainerGap(185, Short.MAX_VALUE))
+                .addContainerGap(141, Short.MAX_VALUE))
         );
 
         jTabbedPane.addTab("Files", jPanel1);
@@ -183,7 +230,7 @@ public class CombineView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bFileActionPerformed
-        browseHRMFile();
+        browseHRMFile(tfFileName);
 }//GEN-LAST:event_bFileActionPerformed
 
     private void bAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddActionPerformed
@@ -210,6 +257,29 @@ public class CombineView extends javax.swing.JFrame {
 
     }//GEN-LAST:event_bViewActionPerformed
 
+    private void bFileoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bFileoutActionPerformed
+        browseHRMFile(tfOutfile);
+
+    }//GEN-LAST:event_bFileoutActionPerformed
+
+    private void bSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSaveActionPerformed
+        File initialFile = null;
+        String strHRMFile = tfOutfile.getText().trim();
+        if (strHRMFile.length () > 0) {
+            initialFile = new File(strHRMFile);
+        }
+
+        try {
+            WriterInterface w;
+            w = WriterFactory.getWriter(strHRMFile);
+            w.writeFile(initialFile, exercises);
+        }
+        catch (de.saring.polarviewer.core.PVException pve) {
+            System.out.println(pve);
+        }
+        
+    }//GEN-LAST:event_bSaveActionPerformed
+
 
     /**
     * @param args the command line arguments
@@ -222,13 +292,13 @@ public class CombineView extends javax.swing.JFrame {
         });
     }
 
-    public void browseHRMFile () {
+    public void browseHRMFile (javax.swing.JTextField field) {
                // do we have an initial HRM file for the dialog?
         STContextDummy ctx = STContextDummy.getDummy();
         HRMFileOpenDialog dlg = new HRMFileOpenDialog(ctx);
 
         File initialFile = null;
-        String strHRMFile = tfFileName.getText().trim();
+        String strHRMFile = field.getText().trim();
         if (strHRMFile.length () > 0) {
             initialFile = new File(strHRMFile);
         }
@@ -237,20 +307,24 @@ public class CombineView extends javax.swing.JFrame {
         // File selectedFile = null;
         File selectedFile = dlg.selectHRMFile(opts, initialFile);
         if (selectedFile != null) {
-            tfFileName.setText(selectedFile.getAbsolutePath ());
+            field.setText(selectedFile.getAbsolutePath ());
         }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bAdd;
     private javax.swing.JButton bFile;
+    private javax.swing.JButton bFileout;
+    private javax.swing.JButton bSave;
     private javax.swing.JButton bView;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane;
     private javax.swing.JList liFilelist;
     private javax.swing.JTextField tfFileName;
+    private javax.swing.JTextField tfOutfile;
     // End of variables declaration//GEN-END:variables
 
 }

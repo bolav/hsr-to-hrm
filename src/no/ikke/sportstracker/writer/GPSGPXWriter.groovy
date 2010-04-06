@@ -17,7 +17,20 @@ class GPSGPXWriter extends AbstractWriter {
     public GPSGPXWriter (PVExercise x) {
         exercise = x;
     }
-        
+
+    public GPSGPXWriter () {
+    }
+
+    public String getString (PVExercise x) {
+        exercise = x;
+        return getString();
+    }
+
+
+    public WriterInfo getInfo () {
+        return new WriterInfo("GPS GPX","gpx");
+    }
+
     
     public String getString () {
         def writer = new StringWriter()

@@ -13,9 +13,23 @@ class GarminTCXWriter extends AbstractWriter {
     
     PVExercise exercise
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-    
+
+    public GarminTCXWriter () {
+    }
+
     public GarminTCXWriter (PVExercise x) {
         exercise = x;
+    }
+
+
+    public WriterInfo getInfo () {
+        return new WriterInfo("Garmin TCX","tcx");
+    }
+
+
+    public String getString (PVExercise x) {
+        exercise = x;
+        return getString();
     }
         
     
