@@ -98,40 +98,6 @@ public class CompareDiagramPanel extends DiagramPanel {
                 }
             }
         }
-        // some Polar models only record lap data. no samples (e.g. RS200SD)
-        else if (exercise.getLapList () != null)
-        {
-            // data starts with first lap => add 0 values (otherwise not displayed)
-            if (fDomainAxisTime) {
-                fillDataInTimeSeries ((TimeSeries) sLeft, (TimeSeries) sRight, createJFreeChartSecond (0), 0, 0);
-            }
-            else {
-                fillDataInXYSeries ((XYSeries) sLeft, (XYSeries) sRight, 0, 0, 0);
-            }
-
-            // fill data series with all recorded exercise laps
-            for (int i = 0; i < exercise.getLapList ().length; i++) {
-
-                Lap lap = exercise.getLapList ()[i];
-                Number valueLeft = getLapValue (axisTypeLeft, lap);
-                Number valueRight = getLapValue (axisTypeRight, lap);
-
-                if (fDomainAxisTime) {
-                    // calculate current second
-                    int timeSeconds = Math.round (lap.getTimeSplit () / 10f);
-                    Second second = createJFreeChartSecond (timeSeconds);
-                    fillDataInTimeSeries ((TimeSeries) sLeft, (TimeSeries) sRight, second, valueLeft, valueRight);
-                }
-                else {
-                    // get current distance of this sample
-                    double fDistance = lap.getSpeed ().getDistance () / 1000f;
-                    if (getContext ().getFormatUtils ().getUnitSystem () != FormatUtils.UnitSystem.Metric) {
-                        fDistance = ConvertUtils.convertKilometer2Miles (fDistance, false);
-                    }
-                    fillDataInXYSeries ((XYSeries) sLeft, (XYSeries) sRight, fDistance, valueLeft, valueRight);
-                }
-            }
-        }
 
         XYDataset dataset = createDataSet (fDomainAxisTime, sLeft);
 
@@ -143,17 +109,6 @@ public class CompareDiagramPanel extends DiagramPanel {
                 axisTypeBottom.toString (), // Y-axis label
                 axisTypeLeft.toString (),   // X-axis label
                 dataset,                    // primary dataset
-                false,                      // display legend
-                true,                       // display tooltips
-                false);                     // URLs
-        }
-        else {
-            chart = ChartFactory.createXYLineChart (
-                null,                       // Title
-                axisTypeBottom.toString (), // Y-axis label
-                axisTypeLeft.toString (),   // X-axis label
-                dataset,                    // primary dataset
-                PlotOrientation.VERTICAL,   // plot orientation
                 false,                      // display legend
                 true,                       // display tooltips
                 false);                     // URLs
@@ -174,24 +129,24 @@ public class CompareDiagramPanel extends DiagramPanel {
 
         // setup right axis (when selected)
         if (sRight != null) {
-
+/*
             NumberAxis axisRight = new NumberAxis (axisTypeRight.toString ());
             axisRight.setAutoRangeIncludesZero (false);
             plot.setRangeAxis (1, axisRight);
             plot.setRangeAxisLocation (1, AxisLocation.BOTTOM_OR_RIGHT);
             axisRight.setLabelPaint (COLOR_AXIS_RIGHT);
             axisRight.setTickLabelPaint (COLOR_AXIS_RIGHT);
-
+*/
             // create dataset for right axis
-            XYDataset datasetRight = createDataSet (fDomainAxisTime, sRight);
-            plot.setDataset (1, datasetRight);
-            plot.mapDatasetToRangeAxis (1, 1);
+            XYDataset datasetRight = createDataSet(fDomainAxisTime, sRight);
+            plot.setDataset(1, datasetRight);
+            plot.mapDatasetToRangeAxis(1, 0);
 
             // set custom renderer
-            StandardXYItemRenderer rendererRight = new StandardXYItemRenderer ();
-            rendererRight.setSeriesPaint (0, COLOR_AXIS_RIGHT);
-            plot.setRenderer (1, rendererRight);
-            setTooltipGenerator (rendererRight, axisTypeBottom, axisTypeRight);
+            StandardXYItemRenderer rendererRight = new StandardXYItemRenderer();
+            rendererRight.setSeriesPaint(0, COLOR_AXIS_RIGHT);
+            plot.setRenderer(1, rendererRight);
+            setTooltipGenerator(rendererRight, axisTypeBottom, axisTypeRight);
         }
 
         // highlight current selected (if presdent) heartrate range when displayed on left axis

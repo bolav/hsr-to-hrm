@@ -103,7 +103,7 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         
         def sumTime = 0
         def sumDist = 0
-        def minInterval = 0
+        def minInterval = 1000
         
         // For speed
         def speedMax = 0

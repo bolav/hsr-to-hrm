@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TreeMap;
 
 import de.saring.polarviewer.core.PVException;
 import de.saring.polarviewer.parser.ExerciseParserFactory;
@@ -16,7 +17,7 @@ import de.saring.polarviewer.parser.ExerciseParser;
 
 public class CombineExercise extends Exercise  {
     List<PVExercise> exercises = new ArrayList<PVExercise> ();
-    private int maxSamples = 500;
+    private int maxSamples = 50000;
 
     public CombineExercise () {
         
@@ -25,6 +26,7 @@ public class CombineExercise extends Exercise  {
     public void reset () {
         setSampleList(null);
         setSpeed(null);
+        setLapList(null);
         setRecordingInterval((short)0);
 
     }
@@ -39,7 +41,7 @@ public class CombineExercise extends Exercise  {
     }
 
     public int getExerciseCount () {
-        return exercises.size() + 1;
+        return exercises.size();
     }
 
     public void readExercise (String fn) throws PVException {
@@ -101,7 +103,31 @@ public class CombineExercise extends Exercise  {
     
     @Override
     public Lap[] getLapList () {
-        return new Lap[0];
+        Lap[] rv = super.getLapList();
+
+        if (rv != null) {
+            return rv;
+        }
+
+        TreeMap laps = new TreeMap();
+        long time = getDate().getTime();
+
+        for (int i = 0; i<exercises.size(); i++) {
+            Lap[] ls = exercises.get(i).getLapList();
+            long xtime = exercises.get(i).getDate().getTime();
+
+            int offset = (int)(xtime - time) / 100;
+
+            for (int j = 0; j < ls.length; j++) {
+                // TODO: Fill other values
+                ls[j].setTimeSplit(ls[j].getTimeSplit() + offset);
+                laps.put(new Integer(ls[j].getTimeSplit()), ls[j]);
+            }
+        }
+        rv = (Lap[])laps.values().toArray(new Lap[0]);
+
+        setLapList(rv);
+        return rv;
     }
     
     @Override 
@@ -138,6 +164,57 @@ public class CombineExercise extends Exercise  {
         setSpeed(speed);
         return speed;
     }
+
+
+    // TODO: Refactor, and make for speed and altitude
+    private short getHR (PVExercise x, int i) {
+        short ri = getRecordingInterval();
+        long time = getDate().getTime();
+        long xtime = x.getDate().getTime();
+        short xri = x.getRecordingInterval();
+        ExerciseSample[] sl = x.getSampleList();
+
+        long offset = xtime - time;
+        long point = ri * i * 1000;
+
+        long xmillis = (point + time) - xtime;     // millis in this exercise
+        int samplei = (int)(xmillis / 1000) / xri; // index of sample for this time
+        int sampleii = samplei + 1;
+
+        // Fix samplei to be valid
+        if (samplei < 0) samplei = 0;
+        if (samplei >= sl.length) samplei = sl.length - 1;
+
+        if (samplei == 1) {
+            samplei = 1;
+        }
+
+        // next sample
+        if (sampleii >= sl.length) sampleii = sl.length - 1;
+        if (sampleii < 0) sampleii = 0;
+
+        long thisSamplei = (samplei * xri * 1000) + xtime;  // time of this sample
+        long thisSampleii = (sampleii * xri * 1000) + xtime; // time of prev sample
+        long thisTime = time + point;                        // time we want
+
+        short hr = sl[samplei].getHeartRate();
+        short lasthr = sl[sampleii].getHeartRate();
+
+        short diff = (short)(lasthr - hr);
+        long steps = thisSampleii - thisSamplei;
+        long step = thisTime - thisSamplei;
+
+        long addit = 0;
+
+        if ((steps > 0) && (step > 0)) {
+            addit = ((diff * step) / steps);
+        }
+
+        hr = (short)(hr + addit);
+
+
+        return hr;
+    }
      
     @Override
     public ExerciseSample[] getSampleList () {
@@ -152,7 +229,6 @@ public class CombineExercise extends Exercise  {
         long time = getDate().getTime();
         
         int samples = dur / 10 / ri; // Number of samples is duration in seconds dived by recording interval
-        System.out.println("samples "+samples+ " dur: "+dur+" ri "+ri);
         sampleList = new GPSSample[samples];
         
         // Init samples
@@ -172,25 +248,25 @@ public class CombineExercise extends Exercise  {
             RecordingMode xrm = x.getRecordingMode();
             long k = xtime;
 
-            // Calc when in the session this file started
-            // System.out.println("time: "+time+" xtime: "+xtime+" offset: "+startoffset);
+            for (int ii=0; ii < samples; ii++) {
+                short hr = getHR(x, ii);
+                if (hr > 0) sampleList[ii].setHeartRate(hr);
+            }
+
             for (int ii=0; ii<xsl.length; ii++) {
-                short hr = xsl[ii].getHeartRate();
                 short alt = xsl[ii].getAltitude();
                 float speed = xsl[ii].getSpeed();
                 int dist = xsl[ii].getDistance();
-                
-                
+
                 long nextk = k + (xri * 1000); // k and nextk are ms
                 
                 // Which samples shall we populate?
                 int startoffset = (int)((k - time) / 1000) / ri;
                 int endoffset = (int)((nextk - time) / 1000) / ri;
-                
+
+                // TODO: Spread all attributes
+                // If our ri is bigger than exercise ri, samples should be spread and averaged
                 for (int j=startoffset; j<endoffset; j++) {
-                    if (hr > 0) {
-                        sampleList[j].setHeartRate(hr);
-                    }
                     if (alt > 0) {
                         sampleList[j].setAltitude(alt);
                     }
@@ -235,7 +311,6 @@ public class CombineExercise extends Exercise  {
             }
         }
 
-        /*
         int ms = getMaxSamples();
         System.out.println("Max "+ms);
         int mydiv = duration / recordingInterval;
@@ -243,10 +318,10 @@ public class CombineExercise extends Exercise  {
 
         if (mydiv > ms) {
             recordingInterval = (short)(duration / ms); // Minste felles multiplum?
-            // Check for goodlooking?
+            // Check for goodlooking ri?
         }
         System.out.println("ri "+recordingInterval);
-        */
+
         setRecordingInterval(recordingInterval);
         return recordingInterval;
     }

@@ -26,6 +26,8 @@ public class AbstractWriter implements WriterInterface {
             FileWriter fstream = new FileWriter(f);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(s);
+            out.close();
+            fstream.close();
         }
         catch (Exception e) {
             System.err.println("Exception: "+e);

@@ -13,6 +13,7 @@ package no.ikke.sportstracker.combine.gui;
 
 import no.ikke.sportstracker.combine.data.CombineExercise;
 import no.ikke.sportstracker.combine.gui.panels.CompareDiagramPanel;
+import no.ikke.sportstracker.combine.gui.panels.EditSamplePanel;
 import no.ikke.sportstracker.dummy.STContextDummy;
 import no.ikke.sportstracker.dummy.DummyDocument;
 import no.ikke.sportstracker.writer.*;
@@ -235,6 +236,7 @@ public class CombineView extends javax.swing.JFrame {
 
     private void bAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddActionPerformed
 
+
         String strHRMFile = tfFileName.getText().trim();
         fileList.add(strHRMFile);
         liFilelist.setListData(fileList);
@@ -243,6 +245,15 @@ public class CombineView extends javax.swing.JFrame {
             exercises.readExercise(strHRMFile);
             document.setExercise(exercises);
             // document.openExerciseFile(strHRMFile);
+
+            DummyDocument newdoc = new DummyDocument();
+            newdoc.setOptions(opts);
+            newdoc.setExercise(exercises.getExercise(exercises.getExerciseCount()-1));
+            EditSamplePanel newsp = new EditSamplePanel();
+            newsp.setDocument(newdoc);
+            newsp.displayExercise();
+            jTabbedPane.add("Samples "+exercises.getExerciseCount(), newsp);
+
         }
         catch (de.saring.polarviewer.core.PVException e) {
             System.err.println("Ex: "+e);

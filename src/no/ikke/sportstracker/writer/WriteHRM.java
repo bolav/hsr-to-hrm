@@ -206,16 +206,16 @@ public class WriteHRM extends AbstractWriter {
         StringBuffer sb = new StringBuffer();
         sb.append("[HRZones]\r\n");
         sb.append("190\r\n"); // TODO: config
-        sb.append("180\r\n");// TODO: config
-        sb.append("170\r\n");// TODO: config
-        sb.append("160\r\n");// TODO: config
-        sb.append("150\r\n");// TODO: config
-        sb.append("140\r\n");// TODO: config
-        sb.append("0\r\n");// TODO: config
-        sb.append("0\r\n");// TODO: config
-        sb.append("0\r\n");// TODO: config
-        sb.append("0\r\n");// TODO: config
-        sb.append("0\r\n");// TODO: config
+        sb.append("180\r\n");// config
+        sb.append("170\r\n");// config
+        sb.append("160\r\n");// config
+        sb.append("150\r\n");// config
+        sb.append("140\r\n");// config
+        sb.append("0\r\n");// config
+        sb.append("0\r\n");// config
+        sb.append("0\r\n");// config
+        sb.append("0\r\n");// config
+        sb.append("0\r\n");// config
         sb.append("\r\n");
         
         return sb.toString();
