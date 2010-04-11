@@ -72,7 +72,7 @@ class GarminTCXWriter extends AbstractWriter {
                                 Trackpoint {
                                     Time(sdf.format(new Date(time)))
                                     
-                                    if (sl[i] instanceof GPSSample) {
+                                    if ((sl[i] instanceof GPSSample)&&(sl[i].getLatitude() != 0)&&(sl[i].getLongitude() != 0)) {
                                         Position {
                                             LatitudeDegrees(sl[i].getLatitude())
                                             LongitudeDegrees(sl[i].getLongitude())

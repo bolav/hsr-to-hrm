@@ -283,14 +283,22 @@ public class CombineExercise extends Exercise  {
                 }
                 
                 k = nextk;
-                // sampleList[]
             }
             
-            
-            // ExerciseSample[] sl = exercises.get(i).getSampleList();
+        }
+
+        int maxdist = 0;
+        for (int i=0; i<samples; i++) {
+            // Fix distance. Cannot decrease
+            if (sampleList[i].getDistance() < maxdist) {
+                sampleList[i].setDistance(maxdist);
+            }
+            else {
+                maxdist = sampleList[i].getDistance();
+            }
         }
         
-        // Iterate all and fix?
+        // TODO: Iterate all and fix?
                 
         setSampleList(sampleList);
         return sampleList;
@@ -310,9 +318,11 @@ public class CombineExercise extends Exercise  {
                 if (ri > 0) recordingInterval = ri;
             }
         }
+        if (recordingInterval <= 0) recordingInterval = 1;
 
         int ms = getMaxSamples();
         System.out.println("Max "+ms);
+        System.out.println("ri: "+recordingInterval);
         int mydiv = duration / recordingInterval;
         System.out.println("Current "+mydiv);
 

@@ -53,7 +53,7 @@ public class EditSamplePanel extends SamplePanel {
 
             for (int i=0; i<rows.length; i++) {
                 System.out.print(rows[i]+", ");
-                ExerciseUtil.deleteSample(exercise, (Integer)tbSamples.getValueAt(rows[i], 0));
+                ExerciseUtil.zeroSample(exercise, (Integer)tbSamples.getValueAt(rows[i], 0));
             }
             System.out.println("");
 

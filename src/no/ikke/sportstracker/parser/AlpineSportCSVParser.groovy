@@ -107,8 +107,8 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
         
         // For speed
         def speedMax = 0
-        def lastLon = null
-        def lastLat = null
+        def lastlon = null
+        def lastlat = null
         
         // For altitude
         def altitudeMin = null
@@ -181,21 +181,24 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
                     def speed = 0
 
                     double lat = cols[5].toDouble()
-                    double lng = cols[6].toDouble()
+                    double lon = cols[6].toDouble()
 
                     if (lastLat != null) {
-                        def calcdist = GPS.haversin(lat, lng, lastLat, lastLon)
+                        def calcdist = GPS.haversin(lat, lng, lastlat, lastlon)
                         speed = ((calcdist * 3600) / ms)
 
                     }
 
-                    lastLat = lat
-                    lastLon = lng
+                    lastlat = lat
+                    lastlon = lon
                     */
 
                     if (speed > speedMax) {
                         speedMax = speed
                     }
+
+                    def lon = cols[6].toDouble()
+                    def lat = cols[5].toDouble()
 
                     int n = ms / minInterval          // Get evenly spaced intervals
                     for (int i = 0;i < n; i++) {
@@ -204,20 +207,27 @@ class AlpineSportCSVParser extends AbstractExerciseParser {
                         exeSample.altitude = alt
                         exeSample.distance = sumDist + ((dist / n) * i)  // Get evenly spaced distance
                         exeSample.speed = speed
-                        exeSample.latitude = cols[5].toDouble()
-                        exeSample.longitude = cols[6].toDouble()
+
+                        if (lastlat != null) {
+                            exeSample.latitude = lastlat + (((lat - lastlat)/n)*i)
+                            exeSample.longitude = lastlon + (((lon - lastlon)/n)*i)
+                        }
+                        else {
+                            exeSample.latitude = lat
+                            exeSample.longitude = lon
+                        }
                         
                         sampleList.add (exeSample)
                     }
 
-
                     sumDist += dist
+                    lastlat = lat
+                    lastlon = lon
 
             }}
         }
 
         exercise.date = calDate.time
-        
         exercise.recordingInterval = minInterval / 1000
         exercise.sampleList = sampleList
         exercise.duration = sumTime / 100
